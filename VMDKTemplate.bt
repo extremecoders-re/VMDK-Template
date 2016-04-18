@@ -1,0 +1,84 @@
+//--------------------------------------
+//--- 010 Editor v5.0.1 Binary Template
+//
+// File: VMDKTemplate.bt
+// Author: ExtremeCoders
+// Revision: 001
+// Purpose: Template for VMDK Files
+//--------------------------------------
+typedef ubyte uint8;
+#define SECTOR_SIZE 512
+
+typedef uint64 SectorType;
+typedef uint8 Bool;
+
+typedef struct SparseExtentHeader
+{    
+    uint32 magicNumber <format=hex>;
+    uint32 version;
+    uint32 flags;
+    SectorType capacity;
+    SectorType grainSize;
+    SectorType descriptorOffset;
+    SectorType descriptorSize;
+    uint32 numGTEsPerGT;
+    SectorType rgdOffset;
+    SectorType gdOffset;
+    SectorType overHead;
+    Bool uncleanShutdown;
+    char singleEndLineChar;
+    char nonEndLineChar;
+    char doubleEndLineChar1;
+    char doubleEndLineChar2;
+    uint16 compressAlgorithm;
+    uint8 pad[433];
+};
+
+typedef struct GrainDirectory(uint numEntries)
+{
+    uint32 grainDirectoryEntry[numEntries]; 
+};
+
+typedef struct GrainTable
+{
+    uint32 grainTableEntry[spe.numGTEsPerGT];
+};
+
+typedef struct Sector
+{
+    ubyte data[SECTOR_SIZE];
+};
+
+typedef struct Grain
+{
+    Sector sector[128]; // Each grain contains 128 sectors
+};
+
+LittleEndian();
+
+SparseExtentHeader spe;
+FSeek(spe.gdOffset * SECTOR_SIZE);
+
+// Calculate number of grain directory entry 
+local int numGDEntries;
+for (numGDEntries = 0; numGDEntries < 64; numGDEntries++)
+{
+    if (ReadInt(FTell() + numGDEntries*4) == 0) break;    
+}
+
+GrainDirectory gd(numGDEntries);
+
+local int i, j, sectorNum;
+sectorNum = 0;
+
+for (i = 0; i < numGDEntries; i++)
+{
+    FSeek(gd.grainDirectoryEntry[i] * SECTOR_SIZE);
+    GrainTable gt;
+    for (j = 0; j < spe.numGTEsPerGT; j++) 
+    {
+        FSeek(gt.grainTableEntry[j] * SECTOR_SIZE);
+        Grain g;
+        sectorNum++;
+    }
+}
