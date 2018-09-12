@@ -16,7 +16,12 @@ typedef struct SparseExtentHeader
 {    
     uint32 magicNumber <format=hex>;
     uint32 version;
-    uint32 flags;
+    uint32 hasValidNewLineDetectionList : 1;
+    uint32 isRedundantGrainTableUsed : 1;
+    uint32 isZeroedGTEUsed : 1;
+    uint32      : 13;
+    uint32 areGrainsCompressed : 1;
+    uint32 areMarkersUsed : 1;
     SectorType capacity;
     SectorType grainSize;
     SectorType descriptorOffset;
